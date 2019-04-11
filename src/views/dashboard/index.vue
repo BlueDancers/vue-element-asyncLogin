@@ -1,7 +1,12 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-text">name:{{ name }}</div>
-    <div class="dashboard-text">roles:<span v-for="role in roles" :key="role">{{ role }}</span></div>
+    <div class="dashboard-text">
+      roles:
+      <span v-for="role in roles" :key="role">{{ role }}</span>
+    </div>
+    <div>{{ name }} 的路由为 {{ showRouter }}</div>
+    <div>未解析路由信息请看NetWork的,解析完成的路由信息请看控制台</div>
   </div>
 </template>
 
@@ -14,7 +19,14 @@ export default {
     ...mapGetters([
       'name',
       'roles'
-    ])
+    ]),
+    showRouter() {
+      console.log('全部路由信息', this.$store.getters.routerList)
+      if (this.$store.getters.routerList.length > 0) {
+        return this.$store.getters.routerList[3].name
+      }
+      return ''
+    }
   }
 }
 </script>

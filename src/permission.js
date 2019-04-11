@@ -32,8 +32,9 @@ router.beforeEach((to, from, next) => {
       next()
     } else {
       if (to.path !== '/login') {
-        // 重定向到登录页面
-        next(`/login?redirect=${to.path}`)
+        // 重定向到登录页面 不能这么写 因为假如之前的角色是 管理员页面 后又登陆了非管理员 重定向的页面就可能不存在,就会导致404
+        // next(`/login?redirect=${to.path}`)
+        next('/login')
       } else {
         next()
       }
@@ -48,7 +49,7 @@ router.afterEach(() => {
 function gotoRouter(to, next) {
   getRouter(store.getters.token) // 获取动态路由的方法
     .then(res => {
-      console.log(res.data.data)
+      console.log('解析后端动态路由', res.data.data)
       const asyncRouter = addRouter(res.data.data) // 进行递归解析
       // 一定不能写在静态路由里面,否则会出现,访问动态路由404的情况.所以在这列添加
       asyncRouter.push({ path: '*', redirect: '/404', hidden: true })
