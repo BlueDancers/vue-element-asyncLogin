@@ -49,7 +49,7 @@
         <span style="margin-right:20px;">username: admin</span>
         <span style="margin-right:23px;">password: 随意</span>
         <br>
-        <span style="margin-right:23px;">admin的与editor渲染的路由不一样,数据是mock的,请看mock/user.js</span>
+        <span style="margin-right:23px;">admin的与editor渲染的路由不一样,数据来源于 easy-mock</span>
       </div>
       <div class="tips">
         <span style="margin-right:23px;">username: editor</span>

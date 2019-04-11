@@ -1,18 +1,32 @@
-## 记一次Vue动态渲染路由的实现的优化
+## Vue中后台鉴权的另一种思路 - 动态路由的实现与优化
+
+![](http://www.vkcyan.top/FrMSq8o3pbYN1jI1ZNJUIi4RfYq4.svg)
+
+借用大佬的一张图,侵权立删
 
 
 
-Vue+Element作为后台管理模板[github](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2FPanJiaChen%2Fvue-admin-template)
-
-demo已经部署到github,欢迎体验~~
-
-
-
-
+### 前言
 
 在今年年初在掘金发布了一篇文章[记一次Vue动态渲染路由的实现](<https://juejin.im/post/5c4a8a05e51d4506953e389b>),现在代码经过不断的Review
 
 现在完全优化了之前的实现方法,代码量减少很多,逻辑更加简单,同时也更加稳定
+
+
+
+demo已经部署到github,欢迎体验~~ [vue-element-asyncLogin]( https://github.com/vkcyan/vue-element-asyncLogin), 你的start是我的动力!
+
+
+
+### 鉴权-前端路由 VS 鉴权-动态路由
+
+​	前端路由鉴权相信只要了解过[vue-element-admin](https://github.com/PanJiaChen/vue-element-admin/)的都知道,前端鉴权方案是完全可行的,思路清晰,难度适中,项目中完全可以使用,那么相对来说动态路由优势在什么地方呢
+
+1. 前端鉴权不够灵活,线上版本每次修改权限页面,都需要重新打包项目
+2. 中小型项目中 `前端鉴权`明显更加好用,成本更低,程序员们也不用996了(雾),但是对于权限等级很多,并且比较大的项目,维护这一套鉴权路由,毫无疑问是一个大工程,并且面对频繁变更的需求,bug会出现的更加频繁,前端工程师工作量大大增加,这时候似乎前端鉴权就不再是好的方案
+3. 动态路由并不是回归到刀耕火种的时代,而是一种新的思路,路由配置还是由前端完成,仅仅将状态交给了后端,不同角色的路由显示交给后端控制,前端不需要管理路由,最多只需要管理权限颗粒化的问题
+
+​	
 
 ### 实现思路
 
@@ -194,7 +208,7 @@ const map = {
 
 `../utils/addRouter`
 
-> 递归写入比之前的递归删除更加稳定,代码量也更少
+> 递归写入比之前版本的递归删除更加稳定,代码量也更少
 
 ````javascript
 import _import from '../router/_import' // 获取组件的方法
@@ -295,32 +309,37 @@ import { getToken, removeToken } from './utils/auth'
 import NProgress from 'nprogress' // Progress 进度条
 import 'nprogress/nprogress.css' // Progress 进度条样式
 import { Message } from 'element-ui'
-import { getTreeByUser } from './api/login'
+import { getRouter } from './api/login'
 import { addRouter } from './utils/addRouter'
 
-const whiteList = ['/login', '/user/userLogin', '/user/userRegistry']
+const whiteList = ['/login']
 var data = false // 本次demo用变量凑合一下,项目里面应该放到vuex内
 router.beforeEach((to, from, next) => {
   NProgress.start()
-  if (to.meta.title) document.title = `xxxx-${to.meta.title}`
-  if (getToken()) { // 判断cookice是否存在 不存在即为未登录
-    if (to.path !== '/userlogin' && to.path !== '/login') {
-      if (data) { // 获取了动态路由 data一定true,就无需再次请求 直接放行
+  if (getToken()) {
+    // 判断cookice是否存在 不存在即为未登录
+    if (to.path !== '/login') {
+      if (data) {
+        // 获取了动态路由 data一定true,就无需再次请求 直接放行
         next()
-      } else { // data为false,一定没有获取动态路由,就跳转到获取动态路由的方法
+      } else {
+        // data为false,一定没有获取动态路由,就跳转到获取动态路由的方法
         gotoRouter(to, next)
       }
-    } else { 
+    } else {
       Message({ message: '您已经登录', type: 'info' })
       next('/')
     }
   } else {
+    data = false
     if (whiteList.indexOf(to.path) !== -1) {
       // 免登陆白名单 直接进入
       next()
     } else {
-      if (to.path !== '/user') { // 重定向到登录页面
-        next(`/user/userLogin?redirect=${to.path}`)
+      if (to.path !== '/login') {
+        // 重定向到登录页面 不能这么写 因为假如之前的角色是 管理员页面 后又登陆了非管理员 重定向的页面就可能不存在,就会导致404
+        // next(`/login?redirect=${to.path}`)
+        next('/login')
       } else {
         next()
       }
@@ -333,20 +352,27 @@ router.afterEach(() => {
 })
 
 function gotoRouter(to, next) {
-  getTreeByUser() // 获取动态路由的方法
+  getRouter(store.getters.token) // 获取动态路由的方法
     .then(res => {
-      const asyncRouter = addRouter(res.data.children) // 进行递归解析
-      // * 一定不能写在静态路由里面,否则会出现,访问动态路由404的情况.所以在这列添加
+      console.log('解析后端动态路由', res.data.data)
+      const asyncRouter = addRouter(res.data.data) // 进行递归解析
+      // 一定不能写在静态路由里面,否则会出现,访问动态路由404的情况.所以在这列添加
       asyncRouter.push({ path: '*', redirect: '/404', hidden: true })
+      return asyncRouter
+    })
+    .then(asyncRouter => {
       router.addRoutes(asyncRouter) // vue-router提供的addRouter方法进行路由拼接
       data = true // 记录路由获取状态
       store.dispatch('setRouterList', asyncRouter) // 存储到vuex
+      store.dispatch('GetInfo')
       next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
     })
-    .catch(() => {
-      removeToken() 
+    .catch(e => {
+      console.log(e)
+      removeToken()
     })
 }
+
 ```
 
 **Vuex内部的逻辑**
@@ -396,6 +422,6 @@ action: {
   }
 ```
 
-![](http://www.vkcyan.top/FmgCbHryrf0wZ5QP5W42cj9MYh1m.gif)
 
-"# vue-element-asyncLogin" 
+
+我已精心准备了一个简单的demo  [vue-element-asyncLogin]( https://github.com/vkcyan/vue-element-asyncLogin),欢迎体验,如果对你有帮助,请不要吝啬你的start~~
