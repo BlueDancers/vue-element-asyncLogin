@@ -71,7 +71,10 @@ const user = {
     setRouterList({ commit }, routerList) {
       commit('set_router', StaticRouterMap.concat(routerList)) // 进行路由拼接并存储
     },
-
+    // 存储颗粒话权限
+    setroles({ commit }, roleList) {
+      commit('SET_ROLES', roleList)
+    },
     // 登出
     LogOut({ commit, state }) {
       return new Promise((resolve, reject) => {

@@ -7,6 +7,7 @@
     </div>
     <div>{{ name }} 的路由为 {{ showRouter }}</div>
     <div>未解析路由信息请看NetWork的,解析完成的路由信息请看控制台</div>
+    <div>管理员{{roles}}</div>
   </div>
 </template>
 
