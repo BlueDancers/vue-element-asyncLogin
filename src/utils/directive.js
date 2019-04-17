@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import store from '../store'
 /**
  * @export 自定义指令
  */
@@ -10,12 +11,9 @@ export function directive() {
   })
   Vue.directive('permit', {
     bind(el, binding) {
-      console.log(this.$store.getters.roles)
-      if (binding.value === '1111') {
-        console.log('权限通过')
-      } else {
-        el.parentNode.removeChild(el)
-      }
+      !store.getters.roles.includes(binding.value)
+        ? el.parentNode.removeChild(el)
+        : {}
     }
   })
 }
