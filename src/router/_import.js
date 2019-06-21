@@ -7,7 +7,7 @@ const map = {
   Menu1: () => import('@/views/nested/menu1/index'),
   'Menu1-1': () => import('@/views/nested/menu1/menu1-1'),
   'Menu1-2': () => import('@/views/nested/menu1/menu1-2'),
-
+  Menu2: () => import('@/views/nested/menu2/index'),
   form: () => import('@/views/layout/Layout'),
   Form: () => import('@/views/form/index'),
   Example: () => import('@/views/layout/Layout'),

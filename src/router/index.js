@@ -42,6 +42,18 @@ export const StaticRouterMap = [
         component: () => import('@/views/dashboard/index')
       }
     ]
+  },
+  {
+    path: '/redirect',
+    component: Layout,
+    name: 'redirect',
+    hidden: true,
+    children: [
+      {
+        path: '/redirect/:path*',
+        component: () => import('@/views/redirect/index')
+      }
+    ]
   }
 ]
 

@@ -1,15 +1,29 @@
 <template>
   <div v-if="!item.hidden" class="menu-wrapper">
-
-    <template v-if="hasOneShowingChild(item.children,item) && (!onlyOneChild.children||onlyOneChild.noShowingChildren)&&!item.alwaysShow">
+    <template
+      v-if="
+        hasOneShowingChild(item.children, item) &&
+          (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
+          !item.alwaysShow
+      "
+    >
       <app-link :to="resolvePath(onlyOneChild.path)">
-        <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
-          <item :meta="Object.assign({},item.meta,onlyOneChild.meta)" />
+        <el-menu-item
+          :index="resolvePath(onlyOneChild.path)"
+          :class="{ 'submenu-title-noDropdown': !isNest }"
+          @click="reload(item)"
+        >
+          <item :meta="Object.assign({}, item.meta, onlyOneChild.meta)" />
         </el-menu-item>
       </app-link>
     </template>
 
-    <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
+    <el-submenu
+      v-else
+      ref="subMenu"
+      :index="resolvePath(item.path)"
+      popper-append-to-body
+    >
       <template slot="title">
         <item :meta="item.meta" />
       </template>
@@ -19,9 +33,9 @@
         :item="child"
         :key="child.path"
         :base-path="resolvePath(child.path)"
-        class="nest-menu" />
+        class="nest-menu"
+      />
     </el-submenu>
-
   </div>
 </template>
 
@@ -74,7 +88,7 @@ export default {
 
       // Show parent if there are no child router to display
       if (showingChildren.length === 0) {
-        this.onlyOneChild = { ... parent, path: '', noShowingChildren: true }
+        this.onlyOneChild = { ...parent, path: '', noShowingChildren: true }
         return true
       }
 
@@ -85,7 +99,18 @@ export default {
         return routePath
       }
       return path.resolve(this.basePath, routePath)
+    },
+    // 点击重载
+    reload(item) {
+      // 如果发现当前路由与点击的路由一致就携带路由路径跳转到redirect页面
+      if (this.$route.name === item.name) {
+        this.$nextTick(() => {
+          // params 默认会解析成为path字段,如果使用参数的形式 / 会来解析成为%
+          this.$router.replace({
+            path: '/redirect' + this.$route.fullPath,
+          })
+        })
+      }
     }
-  }
-}
+  }}
 </script>
