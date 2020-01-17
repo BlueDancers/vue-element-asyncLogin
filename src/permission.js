@@ -1,5 +1,6 @@
 import router from './router'
 import store from './store'
+import user from './store/modules/user'
 import { getToken, removeToken } from './utils/auth'
 import NProgress from 'nprogress' // Progress 进度条
 import 'nprogress/nprogress.css' // Progress 进度条样式
@@ -8,13 +9,12 @@ import { getRouter } from './api/login'
 import { addRouter } from './utils/addRouter'
 
 const whiteList = ['/login']
-var data = false // 本次demo用变量凑合一下,项目里面应该放到vuex内
 router.beforeEach((to, from, next) => {
   NProgress.start()
   if (getToken()) {
     // 判断cookice是否存在 不存在即为未登录
     if (to.path !== '/login') {
-      if (data) {
+      if (user.state.init) {
         // 获取了动态路由 data一定true,就无需再次请求 直接放行
         next()
       } else {
@@ -26,7 +26,6 @@ router.beforeEach((to, from, next) => {
       next('/')
     }
   } else {
-    data = false
     if (whiteList.indexOf(to.path) !== -1) {
       // 免登陆白名单 直接进入
       next()
@@ -58,10 +57,10 @@ function gotoRouter(to, next) {
     })
     .then(asyncRouter => {
       router.addRoutes(asyncRouter) // vue-router提供的addRouter方法进行路由拼接
-      data = true // 记录路由获取状态
       console.log(asyncRouter)
       store.dispatch('user/setRouterList', asyncRouter) // 存储到vuex
       store.dispatch('user/GetInfo')
+      store.commit('user/set_init', true)
       next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
     })
     .catch(e => {

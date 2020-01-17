@@ -9,6 +9,7 @@ const user = {
     name: '',
     avatar: '',
     roles: [],
+    init: false, // 是否完成初始化 // 默认未完成
     RouterList: [] // 动态路由
   },
 
@@ -27,6 +28,9 @@ const user = {
     },
     set_router: (state, RouterList) => {
       state.RouterList = RouterList
+    },
+    set_init: (state, status) => {
+      state.init = status
     }
   },
 
@@ -99,6 +103,7 @@ const user = {
     logout({ commit }) {
       return new Promise(resolve => {
         commit('SET_TOKEN', '')
+        commit('set_init', false)
         removeToken()
         resolve()
       })
