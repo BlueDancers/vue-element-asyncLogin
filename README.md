@@ -16,8 +16,7 @@
 
 增加QQ交流群,有问题请加群
 
-<img src="http://www.vkcyan.top/FqBFwyQ_itzg_Urq6E_vUpMytCyW.jpg" />
-
+<img src="http://www.vkcyan.top/FoCFV-EDdLZKPfgEC5OVvNH-_9Hd.jpg" />
 
 
 ### 前言
