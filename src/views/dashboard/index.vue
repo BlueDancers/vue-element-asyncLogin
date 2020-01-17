@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">name:{{ name }}</div>
-    <div class="dashboard-text">roles:{{ roles }}</div>
+    <div class="dashboard-text">name(用户权限等级):{{ name }}</div>
+    <div class="dashboard-text">roles(按钮级别权限):{{ roles }}</div>
     <h2>关于路由</h2>
     <div>{{ name }} 的路由为 {{ showRouter }}</div>
     <div>未解析路由信息请看NetWork的,解析完成的路由信息请看控制台</div>
@@ -25,16 +25,17 @@
     <el-button v-if="basePermit('edit')" type="warning">修改</el-button>
     <el-button v-if="basePermit('view')" type="success">查看</el-button>
     <div class="toggle">
-      <el-button @click="toggleUser" size="small" type="primary"
-        >切换用户</el-button
-      >
+      <el-button
+        size="small"
+        type="primary"
+        @click="toggleUser"
+      >切换用户</el-button>
     </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import { permit } from '../../utils/index.js'
 export default {
   name: 'Dashboard',
   computed: {
@@ -45,22 +46,23 @@ export default {
     showRouter() {
       console.log('全部路由信息', this.$store.getters.routerList)
       if (this.$store.getters.routerList.length > 0) {
-        return this.$store.getters.routerList[3].name
+        return this.$store.getters.routerList.reduce((arr, item) => {
+          return arr.concat(item.path)
+        }, [])
       }
       return ''
     }
   },
   methods: {
     toggleUser() {
-      // 为什么切换状态要属性页面
-      if (this.name === 'editor') {
-        this.$store.dispatch('Login', { username: 'admin', password: '' }).then(() => {
+      if (this.name === 'Normal Editor') {
+        this.$store.dispatch('user/login', { username: 'admin', password: '' }).then(() => {
           location.reload()
         }).catch(() => {
           this.$message('接口出现了一些问题....')
         })
-      } else {
-        this.$store.dispatch('Login', { username: 'editor', password: '' }).then(() => {
+      } else if (this.name === 'Super Admin') {
+        this.$store.dispatch('user/login', { username: 'editor', password: '' }).then(() => {
           location.reload()
         }).catch(() => {
           this.$message('接口出现了一些问题....')
@@ -68,13 +70,13 @@ export default {
       }
     },
     basePermit(e) {
-      return permit(e)
+      return this.$store.getters.roles.includes(e)
     }
   }
 }
 </script>
 
-<style rel="stylesheet/scss" lang="scss" scoped>
+<style lang="scss" scoped>
 .dashboard {
   position: absolute;
   &-container {

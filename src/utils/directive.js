@@ -10,10 +10,10 @@ export function directive() {
     }
   })
   Vue.directive('permit', {
-    bind(el, binding) {
-      !store.getters.roles.includes(binding.value)
-        ? el.parentNode.removeChild(el)
-        : {}
+    inserted(el, binding) {
+      if (!store.getters.roles.includes(binding.value)) {
+        el.parentNode.removeChild(el)
+      }
     }
   })
 }
