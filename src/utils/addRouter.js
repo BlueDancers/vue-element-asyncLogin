@@ -7,6 +7,7 @@ import _import from '../router/_import' // 获取组件的方法
  */
 export function addRouter(routerlist) {
   const router = []
+  console.log('递归', routerlist)
   try {
     routerlist.forEach(e => {
       if (_import(e.name) == null) {
@@ -20,7 +21,7 @@ export function addRouter(routerlist) {
       if (e.children) {
         const children = addRouter(e.children)
         // 保存权限
-        e_new = { ...e_new, children: children.router }
+        e_new = { ...e_new, children: children }
       }
       if (e.redirect) {
         e_new = { ...e_new, redirect: e.redirect }
