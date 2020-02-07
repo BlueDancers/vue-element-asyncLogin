@@ -36,7 +36,6 @@ export const StaticRouterMap = [
     component: () => import('@/views/login/index'),
     hidden: true
   },
-  { path: '/404', component: () => import('@/views/404'), hidden: true },
   {
     path: '/',
     component: Layout,
@@ -47,6 +46,12 @@ export const StaticRouterMap = [
       {
         path: 'dashboard',
         component: () => import('@/views/dashboard/index')
+      },
+      {
+        path: '404',
+        name: 'error',
+        component: () => import('@/views/404'),
+        hidden: true
       }
     ]
   },
@@ -61,6 +66,11 @@ export const StaticRouterMap = [
         component: () => import('@/views/redirect/index')
       }
     ]
+  },
+  {
+    path: '*',
+    redirect: '/404',
+    hidden: true
   }
 ]
 
@@ -164,7 +174,7 @@ export const AsyncRouterMap = [
 
 const createRouter = () =>
   new Router({
-    // mode: 'history', // require service support
+    mode: 'history', // require service support
     scrollBehavior: () => ({ y: 0 }),
     routes: StaticRouterMap
   })

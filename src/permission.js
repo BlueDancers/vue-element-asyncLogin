@@ -51,8 +51,6 @@ function gotoRouter(to, next) {
       console.log('解析后端动态路由', res)
       const asyncRouter = addRouter(res.data.router) // 进行递归解析
       store.dispatch('user/setroles', res.data.permit)
-      // 一定不能写在静态路由里面,否则会出现,访问动态路由404的情况.所以在这列添加
-      asyncRouter.push({ path: '*', redirect: '/404', hidden: true })
       return asyncRouter
     })
     .then(asyncRouter => {
