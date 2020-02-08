@@ -16,6 +16,7 @@ router.beforeEach((to, from, next) => {
     if (to.path !== '/login') {
       if (user.state.init) {
         // 获取了动态路由 data一定true,就无需再次请求 直接放行
+        console.log(from, to);
         next()
       } else {
         // data为false,一定没有获取动态路由,就跳转到获取动态路由的方法
@@ -41,9 +42,11 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-router.afterEach(() => {
+router.afterEach((to, from) => {
   NProgress.done() // 结束Progress
 })
+
+
 
 function gotoRouter(to, next) {
   getRouter(store.getters.token) // 获取动态路由的方法

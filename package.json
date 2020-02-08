@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vue-cli-service serve",
-    "build:prod": "vue-cli-service build",
+    "build": "vue-cli-service build",
     "build:stage": "vue-cli-service build --mode staging",
     "preview": "node build/index.js --preview",
     "lint": "eslint --ext .js,.vue src",
@@ -35,7 +35,7 @@
     "@vue/test-utils": "1.0.0-beta.29",
     "autoprefixer": "^9.5.1",
     "babel-core": "7.0.0-bridge.0",
-    "babel-eslint": "10.0.1",
+    "babel-eslint": "8.0.1",
     "babel-jest": "23.6.0",
     "chalk": "2.4.2",
     "connect": "3.6.6",

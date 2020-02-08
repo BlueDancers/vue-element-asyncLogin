@@ -28,7 +28,7 @@
     <el-button v-if="basePermit('view')" type="success">查看</el-button>
     <div class="toggle">
       <el-button size="small" type="primary" @click="toggleShow">
-        查看文档
+        代码思路
       </el-button>
       <el-button size="small" type="primary" @click="toggleUser">
         切换用户

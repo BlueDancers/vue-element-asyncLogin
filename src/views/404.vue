@@ -31,8 +31,9 @@
             style="color:#20a0ff"
             href="https://wallstreetcn.com"
             target="_blank"
-            >wallstreetcn</a
           >
+            wallstreetcn
+          </a>
         </div>
         <div class="bullshit__headline">{{ message }}</div>
         <div class="bullshit__info">
