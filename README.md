@@ -1,8 +1,18 @@
-## vue-element-template 动态路由的实现
+# Vue中后台鉴权的另一种方案 - 动态路由
 
 
 
 ![](http://www.vkcyan.top/FrMSq8o3pbYN1jI1ZNJUIi4RfYq4.svg)
+
+
+
+案例: [vue-element-asyncLogin]( https://github.com/vkcyan/vue-element-asyncLogin)
+
+### 2020-2-8更新
+
+优化流程,简化逻辑,去除_import.js文件,改为直接动态导入
+
+优化404页面
 
 
 
@@ -126,106 +136,67 @@ export default new Router({
 
 ```json
 [{
-  "id": 1,
-  "name": "Nested",
-  "code": null,
-  "description": null,
-  "url": "/nested",
-  "generatemenu": 0,
-  "sort": 0,
-  "parentId": null,
-  "permName": null,
-  "redirect": "/nested/menu1",
-  "title": "Nested",
-  "icon": "nested",
-  "children": [{
-    "id": 2,
-    "name": "Menu1",
-    "code": null,
-    "description": null,
-    "url": "menu1",
-    "generatemenu": 0,
-    "sort": 0,
-    "parentId": 1,
-    "permName": null,
-    "redirect": "",
-    "title": "Menu1",
-    "icon": "menu1",
-    "children": [{
-      "id": 4,
-      "name": "Menu1-1",
-      "code": null,
-      "description": null,
-      "url": "menu1-1",
-      "generatemenu": 0,
-      "sort": 0,
-      "parentId": 2,
-      "permName": null,
-      "redirect": "",
-      "title": "Menu1-1",
-      "icon": "",
-      "children": null
-    }, {
-      "id": 5,
-      "name": "Menu1-2",
-      "code": null,
-      "description": null,
-      "url": "menu1-2",
-      "generatemenu": 0,
-      "sort": 0,
-      "parentId": 2,
-      "permName": null,
-      "redirect": "",
-      "title": "Menu1-2",
-      "icon": "",
-      "children": null
-    }]
-  }, {
-    "id": 3,
-    "name": "Menu2",
-    "code": null,
-    "description": null,
-    "url": "menu2",
-    "generatemenu": 0,
-    "sort": 0,
-    "parentId": 1,
-    "permName": null,
-    "redirect": "",
-    "title": "Menu2",
-    "icon": "menu2",
-    "children": null
-  }]
+  id: 1,
+  name: 'Example',
+  code: null,
+  description: null,
+  url: '/example',
+  component: 'layout',
+  generatemenu: 1,
+  sort: 0,
+  parentId: null,
+  permName: null,
+  redirect: '/example/table',
+  title: '普通用户',
+  icon: 'example',
+  children: [
+    {
+      id: 2,
+      name: 'Table',
+      code: null,
+      description: null,
+      url: 'table',
+      component: 'table',
+      generatemenu: 1,
+      sort: 0,
+      parentId: 1,
+      permName: null,
+      redirect: '',
+      title: 'Table',
+      icon: 'table',
+      children: null
+    },
+    {
+      id: 3,
+      name: 'Tree',
+      code: null,
+      description: null,
+      url: 'tree',
+      component: 'tree',
+      generatemenu: 1,
+      sort: 0,
+      parentId: 1,
+      permName: null,
+      redirect: '',
+      title: 'Tree',
+      icon: 'tree',
+      children: null
+    }
+  ]
 }]
 ```
 
 ## 解析后端初始路由数据为可用数据
-
-当然这不是直接用于渲染路由 我们需要进行递归处理成为我们想要的数据
-
-**router/_import**
-
-```
-export default file => {
-  return map[file] || null
-}
-
-const map = {
-  Nested: () => import('@/views/layout/Layout'),
-  Menu1: () => import('@/views/nested/menu1/index'),
-  'Menu1-1': () => import('@/views/nested/menu1/menu1-1'),
-  'Menu1-2': () => import('@/views/nested/menu1/menu1-2')
-}
-```
 
 处理后端原始路由数据
 
 `../utils/addRouter`
 
 > 递归写入比之前版本的递归删除更加稳定,代码量也更少
+>
+> 注意,**路由结构与目录结构是对应的**
 
 ````javascript
-import _import from '../router/_import' // 获取组件的方法
-
 /**
  * 生成路由
  * @param {Array} routerlist 格式化路由
@@ -233,30 +204,35 @@ import _import from '../router/_import' // 获取组件的方法
  */
 export function addRouter(routerlist) {
   const router = []
-  routerlist.forEach(e => {
-    let e_new = {
-      path: e.url,
-      name: e.name,
-      component: _import(e.name)
-    }
-    if (e.children) {
-      e_new = Object.assign({}, e_new, { children: addRouter(e.children) })
-    }
-    if (e.redirect) {
-      e_new = Object.assign({}, e_new, { redirect: e.redirect })
-    }
-    if (e.generatemenu == 0) {
-      e_new = Object.assign({}, e_new, { hidden: true })
-    }
-    if (e.icon !== '' && e.title !== '') {
-      e_new = Object.assign({}, e_new, {
-        meta: { title: e.title, icon: e.icon }
-      })
-    } else if (e.title !== '' && e.icon === '') {
-      e_new = Object.assign({}, e_new, { meta: { title: e.title }})
-    }
-    router.push(e_new)
-  })
+  try {
+    routerlist.forEach(e => {
+      let e_new = {
+        path: e.url,
+        name: e.name,
+        component: () => e.component === 'layout' ? import('@/layout') : import(`@/views/${e.component}/index`)
+      }
+      if (e.children) {
+        const children = addRouter(e.children)
+        // 保存权限
+        e_new = { ...e_new, children: children }
+      }
+      if (e.redirect) {
+        e_new = { ...e_new, redirect: e.redirect }
+      }
+      if (e.generatemenu === 0) {
+        e_new = { ...e_new, hidden: true }
+      }
+      if (e.icon !== '' && e.title !== '') {
+        e_new = { ...e_new, meta: { title: e.title, icon: e.icon } }
+      } else if (e.title !== '' && e.icon === '') {
+        e_new = { ...e_new, meta: { title: e.title } }
+      }
+      router.push(e_new)
+    })
+  } catch (error) {
+    console.error(error)
+    return []
+  }
   return router
 }
 ````
@@ -264,50 +240,6 @@ export function addRouter(routerlist) {
 处理后的路由
 
 > 我们处理后的路由后面需要与现有的router进行拼接,这里需要根据需求 修改处理路由的规则 
-
-```json
-[{
-  "name": "Nested",
-  "redirect": "/nested/menu1",
-  "children": [{
-    "name": "Menu1",
-    "children": [{
-      "name": "Menu1-1",
-      "children": null,
-      "path": "menu1-1",
-      "meta": {
-        "title": "Menu1-1"
-      }
-    }, {
-      "name": "Menu1-2",
-      "children": null,
-      "path": "menu1-2",
-      "meta": {
-        "title": "Menu1-2"
-      }
-    }],
-    "path": "menu1",
-    "meta": {
-      "title": "Menu1",
-      "icon": "menu1"
-    }
-  }, {
-    "name": "Menu2",
-    "children": null,
-    "path": "menu2",
-    "component": null,
-    "meta": {
-      "title": "Menu2",
-      "icon": "menu2"
-    }
-  }],
-  "path": "/nested",
-  "meta": {
-    "title": "Nested",
-    "icon": "nested"
-  }
-}]
-```
 
 ### (核心)合并路由
 
@@ -318,6 +250,7 @@ export function addRouter(routerlist) {
 ```javascript
 import router from './router'
 import store from './store'
+import user from './store/modules/user'
 import { getToken, removeToken } from './utils/auth'
 import NProgress from 'nprogress' // Progress 进度条
 import 'nprogress/nprogress.css' // Progress 进度条样式
@@ -326,13 +259,12 @@ import { getRouter } from './api/login'
 import { addRouter } from './utils/addRouter'
 
 const whiteList = ['/login']
-var data = false // 本次demo用变量凑合一下,项目里面应该放到vuex内
 router.beforeEach((to, from, next) => {
   NProgress.start()
   if (getToken()) {
     // 判断cookice是否存在 不存在即为未登录
     if (to.path !== '/login') {
-      if (data) {
+      if (user.state.init) {
         // 获取了动态路由 data一定true,就无需再次请求 直接放行
         next()
       } else {
@@ -344,7 +276,6 @@ router.beforeEach((to, from, next) => {
       next('/')
     }
   } else {
-    data = false
     if (whiteList.indexOf(to.path) !== -1) {
       // 免登陆白名单 直接进入
       next()
@@ -360,24 +291,24 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-router.afterEach(() => {
+router.afterEach((to, from) => {
   NProgress.done() // 结束Progress
 })
 
 function gotoRouter(to, next) {
   getRouter(store.getters.token) // 获取动态路由的方法
     .then(res => {
-      console.log('解析后端动态路由', res.data.data)
-      const asyncRouter = addRouter(res.data.data) // 进行递归解析
-      // 一定不能写在静态路由里面,否则会出现,访问动态路由404的情况.所以在这列添加
-      asyncRouter.push({ path: '*', redirect: '/404', hidden: true })
+      console.log('解析后端动态路由', res)
+      const asyncRouter = addRouter(res.data.router) // 进行递归解析
+      store.dispatch('user/setroles', res.data.permit)
       return asyncRouter
     })
     .then(asyncRouter => {
       router.addRoutes(asyncRouter) // vue-router提供的addRouter方法进行路由拼接
-      data = true // 记录路由获取状态
-      store.dispatch('setRouterList', asyncRouter) // 存储到vuex
-      store.dispatch('GetInfo')
+      console.log(asyncRouter)
+      store.dispatch('user/setRouterList', asyncRouter) // 存储到vuex
+      store.dispatch('user/GetInfo')
+      store.commit('user/set_init', true)
       next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
     })
     .catch(e => {
@@ -385,7 +316,6 @@ function gotoRouter(to, next) {
       removeToken()
     })
 }
-
 ```
 
 **Vuex内部的逻辑**
@@ -437,4 +367,4 @@ action: {
 
 
 
-我已精心准备了一个简单的demo  [vue-element-asyncLogin]( https://github.com/vkcyan/vue-element-asyncLogin),欢迎体验,如果对你有帮助,请不要吝啬你的start~~
+我已精心准备了一个简单的demo  [vue-element-asyncLogin]( https://github.com/vkcyan/vue-element-asyncLogin),欢迎体验,如果对你有帮助,请不要吝啬你的start~~1

@@ -66,11 +66,11 @@ export const StaticRouterMap = [
       }
     ]
   },
-  // {
-  //   path: '*',
-  //   redirect: '/404',
-  //   hidden: true
-  // }
+  {
+    path: '*',
+    redirect: '/404',
+    hidden: true
+  }
 ]
 
 export const AsyncRouterMap = [
