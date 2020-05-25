@@ -4,6 +4,10 @@
 
 案例: [vue-element-asyncLogin](https://github.com/vkcyan/vue-element-asyncLogin)
 
+### 2020-5-25 更新
+
+修复动态导入组件问题
+
 ### 2020-3-21 更新
 
 修复刷新 404 的 bug
