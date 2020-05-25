@@ -10,7 +10,7 @@ export function addRouter(routerlist) {
       let e_new = {
         path: e.url,
         name: e.name,
-        component: () => e.component === 'layout' ? import('@/layout') : import(`@/views/${e.component}/index`)
+        component: resolve => e.component === 'layout' ? require([`@/layout`], resolve) : require([`@/views/${e.component}/index`], resolve)
       }
       if (e.children) {
         const children = addRouter(e.children)
